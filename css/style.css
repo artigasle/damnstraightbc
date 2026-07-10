@@ -61,8 +61,8 @@ body::before {
   transform: rotate(180deg);
   font-family: var(--mono);
   font-weight: 700;
-  font-size: 42px;
-  letter-spacing: 0.9em;
+  font-size: 4vh;
+  letter-spacing: 3vh;
   color: rgba(20, 32, 51, 0.22);
   pointer-events: none;
   z-index: 0;
