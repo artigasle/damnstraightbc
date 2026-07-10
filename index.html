@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>728 AMS Damn Straight Booster Club — Store</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-mark">728</div>
+      <div class="brand-text">
+        <p class="eyebrow">728th Air Mobility Squadron</p>
+        <h1>Damn Straight Booster Club</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline btn-cart" id="openCartBtn">
+        Manifest <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="page-title-row">
+    <div>
+      <h2 class="page-title">Squadron Gear</h2>
+      <p class="page-sub">All proceeds support 728 AMS booster club events</p>
+    </div>
+  </div>
+
+  <div class="grid" id="grid">
+    <div class="empty-state">Loading inventory…</div>
+  </div>
+</main>
+
+<p class="footer-note">728 AMS Damn Straight Booster Club &middot; Questions about an order? Contact your booster club POC.</p>
+
+<!-- Cart drawer -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="manifest-head">
+    <p class="eyebrow">Load manifest</p>
+    <h2>Your cart <button class="close-cart" id="closeCartBtn">&times;</button></h2>
+  </div>
+  <div class="manifest-body" id="manifestBody"></div>
+  <div class="manifest-foot" id="manifestFoot"></div>
+</aside>
+
+<!-- Checkout modal -->
+<div class="modal-overlay" id="checkoutOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Submit order</h3>
+      <button id="closeCheckoutBtn">&times;</button>
+    </div>
+    <form id="checkoutForm">
+      <div class="modal-body">
+        <div id="checkoutSummary" style="margin-bottom:16px;"></div>
+        <div class="field">
+          <label>Full name</label>
+          <input type="text" id="custName" required>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="custEmail" required>
+        </div>
+        <div class="field">
+          <label>Note (optional — size, pickup preference, etc.)</label>
+          <textarea id="custNote"></textarea>
+        </div>
+        <p style="font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);">
+          Submitting will open an email to the booster club with your order details. Payment is arranged separately with your booster club POC.
+        </p>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" id="cancelCheckoutBtn">Cancel</button>
+        <button type="submit" class="btn btn-amber" id="placeOrderBtn">Place order</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Confirmation modal -->
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-body" style="text-align:center;padding:32px 22px;">
+      <span class="stamp">Order received</span>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin:16px 0 4px;">Order ID</p>
+      <p class="mono" id="confirmOrderId" style="font-weight:700;font-size:14px;"></p>
+      <p style="font-size:13.5px;margin-top:16px;">We've saved your order and opened an email to the booster club. If your email app didn't open, reach out to your booster club POC with your order ID.</p>
+      <button class="btn btn-navy" id="closeConfirmBtn" style="margin-top:16px;">Done</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/store.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

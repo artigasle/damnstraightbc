@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — 728 AMS Booster Club Store</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-mark">728</div>
+      <div class="brand-text">
+        <p class="eyebrow">Admin</p>
+        <h1>Booster Club Store</h1>
+      </div>
+    </div>
+    <div class="header-actions" id="headerActions" style="display:none;">
+      <span class="mono" id="adminEmailLabel" style="font-size:12px;opacity:0.8;"></span>
+      <a class="btn btn-outline btn-sm" href="index.html">View store</a>
+      <button class="btn btn-outline btn-sm" id="logoutBtn">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<!-- Login gate -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <h2>Admin sign-in</h2>
+    <p class="note">Sign in with the admin account created in your Firebase project's Authentication tab. See README.md if you haven't set one up yet.</p>
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPass" required>
+      </div>
+      <button type="submit" class="btn btn-navy" style="width:100%;justify-content:center;">Sign in</button>
+      <p class="gate-error" id="loginError">Sign-in failed — check the email and password.</p>
+    </form>
+  </div>
+</div>
+
+<!-- Admin shell -->
+<main class="wrap" id="adminShell" style="display:none;">
+  <div class="page-title-row">
+    <div>
+      <h2 class="page-title">Store admin</h2>
+      <p class="page-sub">Inventory, orders &amp; analytics</p>
+    </div>
+  </div>
+
+  <nav class="admin-nav">
+    <button class="active" data-panel="panel-inventory">Inventory</button>
+    <button data-panel="panel-orders">Current orders</button>
+    <button data-panel="panel-analytics">Analytics</button>
+    <button data-panel="panel-settings">Settings</button>
+  </nav>
+
+  <!-- Inventory -->
+  <section class="panel active" id="panel-inventory">
+    <div class="toolbar">
+      <span class="page-sub">Photos, prices &amp; live stock counts</span>
+      <button class="btn btn-amber" id="addItemBtn">Add item</button>
+    </div>
+    <div class="table-wrap">
+      <table id="invTable">
+        <thead>
+          <tr><th>Photo</th><th>Item</th><th>Price</th><th>Cost</th><th>Stock</th><th>Margin</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Orders -->
+  <section class="panel" id="panel-orders">
+    <div class="toolbar">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-navy btn-sm order-filter" data-filter="all">All</button>
+        <button class="btn btn-ghost btn-sm order-filter" data-filter="pending">Pending</button>
+        <button class="btn btn-ghost btn-sm order-filter" data-filter="completed">Completed</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="ordersTable">
+        <thead>
+          <tr><th>Order</th><th>Placed</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Analytics -->
+  <section class="panel" id="panel-analytics">
+    <div class="toolbar">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-navy btn-sm analytics-filter" data-filter="completed">Completed orders</button>
+        <button class="btn btn-ghost btn-sm analytics-filter" data-filter="all">All orders</button>
+      </div>
+    </div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="table-wrap">
+      <table id="breakdownTable" class="breakdown-table">
+        <thead>
+          <tr><th>Item</th><th>Qty sold</th><th>Revenue</th><th>Cost</th><th>Profit</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section class="panel" id="panel-settings">
+    <div class="table-wrap" style="padding:22px;max-width:460px;">
+      <form id="settingsForm">
+        <div class="field">
+          <label>Order notification email</label>
+          <input type="email" id="settingsEmail" placeholder="boosterclub@example.com" required>
+        </div>
+        <p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;">
+          When a customer submits an order, their email app opens a pre-filled message addressed to this account. The order is also saved here in the admin panel regardless of whether the email actually gets sent.
+        </p>
+        <button type="submit" class="btn btn-amber">Save settings</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<!-- Item modal -->
+<div class="modal-overlay" id="itemOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="itemModalTitle">Add item</h3>
+      <button id="closeItemBtn" type="button">&times;</button>
+    </div>
+    <form id="itemForm">
+      <input type="hidden" id="itemId">
+      <div class="modal-body">
+        <div class="field">
+          <label>Photo</label>
+          <div class="img-preview" id="imgPreview"><span>No photo selected</span></div>
+          <input type="file" id="itemPhoto" accept="image/*">
+        </div>
+        <div class="field"><label>Name</label><input type="text" id="itemName" required></div>
+        <div class="field"><label>SKU / code (optional)</label><input type="text" id="itemSku" placeholder="e.g. TEE-BLK-L"></div>
+        <div class="field"><label>Description</label><textarea id="itemDesc"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <div class="field"><label>Sale price ($)</label><input type="number" step="0.01" min="0" id="itemPrice" required></div>
+          <div class="field"><label>Cost ($)</label><input type="number" step="0.01" min="0" id="itemCost" required></div>
+          <div class="field"><label>Stock qty</label><input type="number" step="1" min="0" id="itemStock" required></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" id="cancelItemBtn">Cancel</button>
+        <button type="submit" class="btn btn-amber" id="saveItemBtn">Save item</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Order detail modal -->
+<div class="modal-overlay" id="orderOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="orderModalTitle">Order</h3>
+      <button id="closeOrderBtn" type="button">&times;</button>
+    </div>
+    <div class="modal-body" id="orderModalBody"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/store.js"></script>
+<script src="js/admin.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Reveal header actions once signed in (kept simple, tied to auth state in admin.js)
+    auth.onAuthStateChanged(u => {
+      document.getElementById('headerActions').style.display = u ? 'flex' : 'none';
+    });
+  });
+</script>
+</body>
+</html>
