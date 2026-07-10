@@ -30,7 +30,44 @@ db.collection('config').doc('settings').onSnapshot(doc => {
 
 function renderGrid() {
   const items = sortItems(Object.values(ITEMS));
-  if (!items.length) { function sortItems(items) {
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state">No merchandise posted yet. Check back soon.</div>`;
+    return;
+  }
+  grid.innerHTML = items.map(item => {
+    const stock = Number(item.stock) || 0;
+    const outOfStock = stock <= 0;
+    return `
+    <div class="card" data-id="${item.id}">
+      <div class="card-photo">
+        ${item.sku ? `<span class="sku-tag">${escapeHtml(item.sku)}</span>` : ''}
+        <span class="stock-tag ${stock <= 3 && !outOfStock ? 'low' : ''}" style="${outOfStock ? 'background:rgba(176,65,62,0.92)' : ''}">
+          ${outOfStock ? 'Out of stock' : stock + ' in stock'}
+        </span>
+        ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${escapeHtml(item.name)}">` : `<span class="no-photo">No photo yet</span>`}
+      </div>
+      <div class="card-body">
+        <h3>${escapeHtml(item.name)}</h3>
+        <p class="card-desc">${escapeHtml(item.description || '')}</p>
+        <div class="card-foot">
+          <span class="price">${money(item.price)}</span>
+          ${outOfStock
+            ? `<button class="btn btn-ghost btn-sm" disabled>Sold out</button>`
+            : `
+            <div class="qty-stepper">
+              <button type="button" data-step="-1">–</button>
+              <input type="number" min="1" max="${stock}" value="1" class="qty-input">
+              <button type="button" data-step="1">+</button>
+            </div>`
+          }
+        </div>
+        ${outOfStock ? '' : `<button class="btn btn-amber btn-sm add-btn">Add to manifest</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function sortItems(items) {
   const sorted = [...items];
   switch (sortMode) {
     case 'name-desc':
