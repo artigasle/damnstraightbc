@@ -34,7 +34,6 @@
 html { scroll-behavior: smooth; }
 
 body {
-body {
   margin: 0;
   background:
     repeating-linear-gradient(115deg, rgba(255,255,255,0.35) 0px, rgba(255,255,255,0.35) 1px, transparent 1px, transparent 4px),
@@ -71,7 +70,6 @@ a { color: inherit; }
 
 /* ---------- Header ---------- */
 .site-header {
-  .site-header {
   background: var(--navy);
   color: var(--paper);
   border-bottom: none;
