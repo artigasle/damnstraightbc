@@ -4,6 +4,7 @@
 
 let ITEMS = {};       // itemId -> item data, kept in sync live from Firestore
 let ADMIN_EMAIL = ''; // pulled from config/settings
+let sortMode = 'name-asc';
 
 const grid = document.getElementById('grid');
 const cartOverlay = document.getElementById('cartOverlay');
