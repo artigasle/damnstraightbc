@@ -29,8 +29,29 @@ db.collection('config').doc('settings').onSnapshot(doc => {
 });
 
 function renderGrid() {
-  const items = Object.values(ITEMS);
-  if (!items.length) {
+  const items = sortItems(Object.values(ITEMS));
+  if (!items.length) { function sortItems(items) {
+  const sorted = [...items];
+  switch (sortMode) {
+    case 'name-desc':
+      sorted.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case 'price-asc':
+      sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
+      break;
+    case 'price-desc':
+      sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+      break;
+    default: // name-asc
+      sorted.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return sorted;
+}
+
+document.getElementById('sortSelect').addEventListener('change', (e) => {
+  sortMode = e.target.value;
+  renderGrid();
+});
     grid.innerHTML = `<div class="empty-state">No merchandise posted yet. Check back soon.</div>`;
     return;
   }
