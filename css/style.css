@@ -58,7 +58,7 @@ body::before {
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.4em;
-  color: rgba(20, 32, 51, 0.09);
+  color: rgba(20, 32, 51, 0.22);
   pointer-events: none;
   z-index: 0;
   user-select: none;
