@@ -10,8 +10,8 @@
 :root {
   --navy: #142033;
   --navy-2: #1c2d47;
-  --paper: #f2efe4;
-  --paper-2: #e9e4d4;
+  --paper: #d7dad5;
+  --paper-2: #c5c9c3;
   --ink: #1b1b18;
   --ink-soft: #52534c;
   --amber: #e39a34;
@@ -19,7 +19,7 @@
   --steel: #5c6b73;
   --green: #4c7a51;
   --red: #b0413e;
-  --line: rgba(20, 32, 51, 0.14);
+  --line: rgba(20, 32, 51, 0.10);
 
   --display: 'Oswald', sans-serif;
   --body: 'Inter', sans-serif;
@@ -34,16 +34,35 @@
 html { scroll-behavior: smooth; }
 
 body {
+body {
   margin: 0;
-  background: var(--paper);
-  background-image:
+  background:
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.35) 0px, rgba(255,255,255,0.35) 1px, transparent 1px, transparent 4px),
     linear-gradient(var(--line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 28px 28px;
+    linear-gradient(90deg, var(--line) 1px, transparent 1px),
+    linear-gradient(180deg, #e3e5e1, #c9ccc6);
+  background-size: auto, 28px 28px, 28px 28px, 100% 100%;
+  background-attachment: fixed, scroll, scroll, fixed;
   color: var(--ink);
   font-family: var(--body);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: '728 AMS DS';
+  position: fixed;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.4em;
+  color: rgba(20, 32, 51, 0.09);
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
 }
 
 a { color: inherit; }
@@ -52,9 +71,17 @@ a { color: inherit; }
 
 /* ---------- Header ---------- */
 .site-header {
+  .site-header {
   background: var(--navy);
   color: var(--paper);
-  border-bottom: 4px solid var(--amber);
+  border-bottom: none;
+  position: relative;
+}
+.site-header::after {
+  content: '';
+  display: block;
+  height: 6px;
+  background: repeating-linear-gradient(45deg, #16181a 0 14px, var(--amber) 14px 28px);
 }
 
 .header-inner {
@@ -176,6 +203,8 @@ a { color: inherit; }
   max-width: 1180px;
   margin: 0 auto;
   padding: 36px 24px 80px;
+  position: relative;
+  z-index: 1;
 }
 
 .page-title-row {
