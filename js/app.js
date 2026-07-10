@@ -216,4 +216,58 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
       const itemDocs = await Promise.all(itemRefs.map(ref => tx.get(ref)));
 
       itemDocs.forEach((docSnap, i) => {
-        const
+        const line = cart[i];
+        if (!docSnap.exists) throw new Error(`${line.name} is no longer available.`);
+        const stock = Number(docSnap.data().stock) || 0;
+        if (stock < line.qty) throw new Error(`Only ${stock} left of ${line.name}.`);
+      });
+
+      itemDocs.forEach((docSnap, i) => {
+        const line = cart[i];
+        const newStock = (Number(docSnap.data().stock) || 0) - line.qty;
+        tx.update(itemRefs[i], { stock: newStock });
+      });
+
+      tx.set(orderRef, {
+        customerName,
+        customerEmail,
+        customerNote,
+        items: cart.map(l => ({ itemId: l.itemId, name: l.name, price: l.price, qty: l.qty })),
+        total: cartTotal(cart),
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+
+    // Open the email to the admin with the order details.
+    if (ADMIN_EMAIL) {
+      const mailto = buildOrderMailto(ADMIN_EMAIL, { id: orderRef.id, customerName, customerEmail, customerNote, items: cart, total: cartTotal(cart) });
+      window.location.href = mailto;
+    } else {
+      showToast('Order submitted — admin email isn\'t configured yet, so no email was sent.', true);
+    }
+
+    clearCart();
+    renderCart();
+    closeCheckout();
+    closeCart();
+    showConfirmation(orderRef.id);
+  } catch (err) {
+    console.error(err);
+    showToast(err.message || 'Could not submit order — try again.', true);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Place order';
+  }
+});
+
+function showConfirmation(orderId) {
+  const overlay = document.getElementById('confirmOverlay');
+  document.getElementById('confirmOrderId').textContent = orderId;
+  overlay.classList.add('open');
+}
+document.getElementById('closeConfirmBtn').addEventListener('click', () => {
+  document.getElementById('confirmOverlay').classList.remove('open');
+});
+
+renderCart();
