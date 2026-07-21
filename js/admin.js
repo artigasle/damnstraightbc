@@ -80,15 +80,17 @@ const invTableBody = document.querySelector('#invTable tbody');
 function renderInventory() {
   const items = Object.values(ITEMS);
   if (!items.length) {
-    invTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--ink-soft);font-family:var(--mono);">No items yet — add your first one.</td></tr>`;
+    invTableBody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--ink-soft);font-family:var(--mono);">No items yet — add your first one.</td></tr>`;
     return;
   }
   invTableBody.innerHTML = items.map(item => {
     const stock = Number(item.stock) || 0;
+    const section = item.section === 'seasonal' ? 'Seasonal' : 'Permanent';
     return `
     <tr data-id="${item.id}">
       <td>${item.imageUrl ? `<img class="thumb" src="${item.imageUrl}">` : `<div class="thumb"></div>`}</td>
       <td>${escapeHtml(item.name)}<br><span class="mono" style="font-size:11px;color:var(--ink-soft);">${escapeHtml(item.sku || '')}</span></td>
+      <td><span class="badge ${item.section === 'seasonal' ? 'badge-pending' : 'badge-ok'}">${section}</span></td>
       <td class="mono">${money(item.price)}</td>
       <td class="mono">${money(item.cost)}</td>
       <td><span class="badge ${stock <= 3 ? 'badge-low' : 'badge-ok'}">${stock}</span></td>
@@ -139,6 +141,7 @@ function openItemModal(item) {
   document.getElementById('itemPrice').value = item ? item.price : '';
   document.getElementById('itemCost').value = item ? item.cost : '';
   document.getElementById('itemStock').value = item ? item.stock : '';
+  document.getElementById('itemSection').value = item ? (item.section === 'seasonal' ? 'seasonal' : 'permanent') : 'permanent';
   renderImagePreview();
   itemOverlay.classList.add('open');
 }
@@ -172,6 +175,7 @@ itemForm.addEventListener('submit', async (e) => {
     price: Number(document.getElementById('itemPrice').value) || 0,
     cost: Number(document.getElementById('itemCost').value) || 0,
     stock: Number(document.getElementById('itemStock').value) || 0,
+    section: document.getElementById('itemSection').value === 'seasonal' ? 'seasonal' : 'permanent',
     imageUrl: pendingImageData || ''
   };
   const saveBtn = document.getElementById('saveItemBtn');

@@ -5,8 +5,10 @@
 let ITEMS = {};       // itemId -> item data, kept in sync live from Firestore
 let ADMIN_EMAIL = ''; // pulled from config/settings
 let sortMode = 'name-asc';
+let pendingMailto = null; // set after a successful order, used by the confirmation modal's email button
 
-const grid = document.getElementById('grid');
+const gridPermanent = document.getElementById('gridPermanent');
+const gridSeasonal = document.getElementById('gridSeasonal');
 const cartOverlay = document.getElementById('cartOverlay');
 const cartDrawer = document.getElementById('cartDrawer');
 const manifestBody = document.getElementById('manifestBody');
@@ -21,23 +23,19 @@ db.collection('items').orderBy('name').onSnapshot(snap => {
   renderCart(); // stock labels / clamping may need a refresh
 }, err => {
   console.error(err);
-  grid.innerHTML = `<div class="empty-state">Couldn't load inventory. Check the Firebase config in js/firebase-config.js.</div>`;
+  const msg = `<div class="empty-state">Couldn't load inventory. Check the Firebase config in js/firebase-config.js.</div>`;
+  gridPermanent.innerHTML = msg;
+  gridSeasonal.innerHTML = msg;
 });
 
 db.collection('config').doc('settings').onSnapshot(doc => {
   ADMIN_EMAIL = (doc.exists && doc.data().adminEmail) || '';
 });
 
-function renderGrid() {
-  const items = sortItems(Object.values(ITEMS));
-  if (!items.length) {
-    grid.innerHTML = `<div class="empty-state">No merchandise posted yet. Check back soon.</div>`;
-    return;
-  }
-  grid.innerHTML = items.map(item => {
-    const stock = Number(item.stock) || 0;
-    const outOfStock = stock <= 0;
-    return `
+function cardHtml(item) {
+  const stock = Number(item.stock) || 0;
+  const outOfStock = stock <= 0;
+  return `
     <div class="card" data-id="${item.id}">
       <div class="card-photo">
         ${item.sku ? `<span class="sku-tag">${escapeHtml(item.sku)}</span>` : ''}
@@ -64,7 +62,20 @@ function renderGrid() {
         ${outOfStock ? '' : `<button class="btn btn-amber btn-sm add-btn">Add to manifest</button>`}
       </div>
     </div>`;
-  }).join('');
+}
+
+function renderGrid() {
+  const items = sortItems(Object.values(ITEMS));
+  const permanent = items.filter(i => (i.section || 'permanent') !== 'seasonal');
+  const seasonal = items.filter(i => i.section === 'seasonal');
+
+  gridPermanent.innerHTML = permanent.length
+    ? permanent.map(cardHtml).join('')
+    : `<div class="empty-state">No permanent inventory posted yet.</div>`;
+
+  gridSeasonal.innerHTML = seasonal.length
+    ? seasonal.map(cardHtml).join('')
+    : `<div class="empty-state">No seasonal inventory posted yet.</div>`;
 }
 
 function sortItems(items) {
@@ -90,7 +101,7 @@ document.getElementById('sortSelect').addEventListener('change', (e) => {
   renderGrid();
 });
 
-grid.addEventListener('click', (e) => {
+function handleGridClick(e) {
   const card = e.target.closest('.card');
   if (!card) return;
   const id = card.dataset.id;
@@ -111,7 +122,9 @@ grid.addEventListener('click', (e) => {
     openCart();
     showToast(`Added ${qty} x ${item.name} to your manifest`);
   }
-});
+}
+gridPermanent.addEventListener('click', handleGridClick);
+gridSeasonal.addEventListener('click', handleGridClick);
 
 /* ---------- Cart drawer ---------- */
 function openCart() {
@@ -206,11 +219,14 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
   const customerEmail = document.getElementById('custEmail').value.trim();
   const customerNote = document.getElementById('custNote').value.trim();
 
+  let orderRef;
   try {
-    const orderRef = db.collection('orders').doc();
+    orderRef = db.collection('orders').doc();
 
     // Transaction: verify + decrement stock, then create the order,
-    // so two people can't both buy the last item.
+    // so two people can't both buy the last item. This is the ONLY
+    // step that can show the visitor an error — once it succeeds,
+    // the order is safely logged no matter what happens next.
     await db.runTransaction(async (tx) => {
       const itemRefs = cart.map(l => db.collection('items').doc(l.itemId));
       const itemDocs = await Promise.all(itemRefs.map(ref => tx.get(ref)));
@@ -238,36 +254,58 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
     });
-
-    // Open the email to the admin with the order details.
-    if (ADMIN_EMAIL) {
-      const mailto = buildOrderMailto(ADMIN_EMAIL, { id: orderRef.id, customerName, customerEmail, customerNote, items: cart, total: cartTotal(cart) });
-      window.location.href = mailto;
-    } else {
-      showToast('Order submitted — admin email isn\'t configured yet, so no email was sent.', true);
-    }
-
-    clearCart();
-    renderCart();
-    closeCheckout();
-    closeCart();
-    showConfirmation(orderRef.id);
   } catch (err) {
+    // Order was NOT saved — this is a real failure, safe to show as an error.
     console.error(err);
     showToast(err.message || 'Could not submit order — try again.', true);
-  } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Place order';
+    return;
   }
+
+  // From here on, the order is guaranteed to be saved. Nothing below
+  // this point should ever show the visitor an error.
+  pendingMailto = ADMIN_EMAIL
+    ? buildOrderMailto(ADMIN_EMAIL, { id: orderRef.id, customerName, customerEmail, customerNote, items: cart, total: cartTotal(cart) })
+    : null;
+
+  clearCart();
+  renderCart();
+  closeCheckout();
+  closeCart();
+  showConfirmation(orderRef.id);
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Place order';
 });
 
 function showConfirmation(orderId) {
   const overlay = document.getElementById('confirmOverlay');
   document.getElementById('confirmOrderId').textContent = orderId;
+
+  const emailBtn = document.getElementById('sendConfirmEmailBtn');
+  if (pendingMailto) {
+    emailBtn.style.display = '';
+  } else {
+    emailBtn.style.display = 'none';
+  }
+
   overlay.classList.add('open');
 }
+
+document.getElementById('sendConfirmEmailBtn').addEventListener('click', () => {
+  // Best-effort only — if this fails or does nothing on the visitor's
+  // device, their order is already safely logged regardless.
+  try {
+    if (pendingMailto) window.location.href = pendingMailto;
+  } catch (err) {
+    console.error(err);
+  }
+});
+
 document.getElementById('closeConfirmBtn').addEventListener('click', () => {
   document.getElementById('confirmOverlay').classList.remove('open');
+  pendingMailto = null;
 });
 
 renderCart();
