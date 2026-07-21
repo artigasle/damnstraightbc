@@ -70,7 +70,7 @@
     <div class="table-wrap">
       <table id="invTable">
         <thead>
-          <tr><th>Photo</th><th>Item</th><th>Price</th><th>Cost</th><th>Stock</th><th>Margin</th><th></th></tr>
+          <tr><th>Photo</th><th>Item</th><th>Section</th><th>Price</th><th>Cost</th><th>Stock</th><th>Margin</th><th></th></tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -150,6 +150,13 @@
         <div class="field"><label>Name</label><input type="text" id="itemName" required></div>
         <div class="field"><label>SKU / code (optional)</label><input type="text" id="itemSku" placeholder="e.g. TEE-BLK-L"></div>
         <div class="field"><label>Description</label><textarea id="itemDesc"></textarea></div>
+        <div class="field">
+          <label>Section</label>
+          <select id="itemSection">
+            <option value="permanent">Permanent inventory</option>
+            <option value="seasonal">Seasonal inventory</option>
+          </select>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
           <div class="field"><label>Sale price ($)</label><input type="number" step="0.01" min="0" id="itemPrice" required></div>
           <div class="field"><label>Cost ($)</label><input type="number" step="0.01" min="0" id="itemCost" required></div>
